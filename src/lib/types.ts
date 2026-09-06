@@ -18,6 +18,7 @@ export interface Vendor {
   phone: string | null;
   address: string | null;
   status: Status;
+  commission_rate: number;
 }
 
 export interface AuthUser {
@@ -113,9 +114,49 @@ export interface Payment {
   duitku_reference: string | null;
   payment_method: string;
   amount: string;
+  commission_amount: string | null;
+  vendor_payout_amount: string | null;
   status: PaymentGatewayStatus;
   paid_at: string | null;
   created_at: string;
+}
+
+export interface CommissionSummary {
+  vendor_id: number;
+  vendor_name: string;
+  commission_rate: number;
+  gross_revenue: string;
+  commission_earned: string;
+  payout_owed: string;
+  paid_out: string;
+  outstanding_balance: string;
+}
+
+export interface Payout {
+  id: number;
+  vendor_id: number;
+  vendor?: Vendor;
+  user_id: number | null;
+  recorded_by?: AuthUser;
+  amount: string;
+  note: string | null;
+  paid_at: string;
+  created_at: string;
+}
+
+export interface Review {
+  id: number;
+  vendor_id: number;
+  venue_id: number;
+  venue?: Venue;
+  booking_id: number;
+  booking?: Booking;
+  customer_id: number;
+  customer?: Customer;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AppNotification {
@@ -128,7 +169,7 @@ export interface AppNotification {
   created_at: string;
 }
 
-export type ActivityAction = 'created' | 'updated' | 'deleted' | 'cancelled' | 'paid';
+export type ActivityAction = 'created' | 'updated' | 'deleted' | 'cancelled' | 'paid' | 'payout';
 
 export interface ActivityLogEntry {
   id: number;

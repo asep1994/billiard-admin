@@ -12,6 +12,7 @@ const ACTION_STYLES: Record<ActivityAction, string> = {
   deleted: 'bg-danger-soft text-danger',
   cancelled: 'bg-danger-soft text-danger',
   paid: 'bg-primary-soft text-primary',
+  payout: 'bg-warning-soft text-warning',
 };
 
 const ACTION_LABELS: Record<ActivityAction, string> = {
@@ -20,6 +21,7 @@ const ACTION_LABELS: Record<ActivityAction, string> = {
   deleted: 'Dihapus',
   cancelled: 'Dibatalkan',
   paid: 'Dibayar',
+  payout: 'Payout',
 };
 
 export default function ActivityLogPage() {
