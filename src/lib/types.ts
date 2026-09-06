@@ -118,6 +118,28 @@ export interface Payment {
   created_at: string;
 }
 
+export interface AppNotification {
+  id: string;
+  type: 'booking_created' | 'payment_received' | string;
+  title: string;
+  message: string;
+  booking_id: number | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+export type ActivityAction = 'created' | 'updated' | 'deleted' | 'cancelled' | 'paid';
+
+export interface ActivityLogEntry {
+  id: number;
+  action: ActivityAction;
+  subject_type: string;
+  subject_id: number | null;
+  description: string;
+  user?: AuthUser;
+  created_at: string;
+}
+
 export interface PaginationMeta {
   current_page: number;
   last_page: number;

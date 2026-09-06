@@ -48,7 +48,9 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
       // response had no JSON body (e.g. a plain-text error)
     }
 
-    throw new ApiError(response.status, body?.message ?? response.statusText, body?.errors);
+    // `||`, not `??`: some backend errors (e.g. abort_unless with no message)
+    // return an empty string, which must still fall back to statusText.
+    throw new ApiError(response.status, body?.message || response.statusText, body?.errors);
   }
 
   if (response.status === 204) {

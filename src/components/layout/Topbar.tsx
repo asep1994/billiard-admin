@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Menu, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { NotificationBell } from './NotificationBell';
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -38,6 +39,8 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
         <span className="hidden rounded-lg border border-border px-3 py-1.5 text-xs text-text-muted sm:block">
           {today}
         </span>
+
+        <NotificationBell />
 
         <div className="relative">
           <button

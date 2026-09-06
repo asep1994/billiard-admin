@@ -19,8 +19,6 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  /** Pages not yet backed by a real API endpoint. */
-  comingSoon?: boolean;
   /** Roles allowed to see this item. Omit to allow every role. */
   roles?: UserRole[];
 }
@@ -34,8 +32,8 @@ export const navItems: NavItem[] = [
   { label: 'Pembayaran', href: '/payments', icon: CreditCard },
   { label: 'Promo', href: '/promotions', icon: Tag },
   { label: 'Laporan', href: '/reports', icon: BarChart3 },
-  { label: 'Notifikasi', href: '/notifications', icon: Bell, comingSoon: true },
+  { label: 'Notifikasi', href: '/notifications', icon: Bell },
   { label: 'Pengaturan', href: '/settings', icon: Settings },
   { label: 'User & Role', href: '/users', icon: UserCog, roles: ['super_admin', 'vendor_admin'] },
-  { label: 'Log Aktivitas', href: '/activity-log', icon: History, comingSoon: true },
+  { label: 'Log Aktivitas', href: '/activity-log', icon: History, roles: ['super_admin', 'vendor_admin'] },
 ];

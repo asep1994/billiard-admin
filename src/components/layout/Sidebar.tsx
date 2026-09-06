@@ -71,11 +71,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Icon size={18} />
                   {item.label}
                 </span>
-                {item.comingSoon && (
-                  <span className="rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-semibold text-text-faint">
-                    SOON
-                  </span>
-                )}
               </Link>
             );
           })}

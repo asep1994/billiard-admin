@@ -33,7 +33,8 @@ export function useApiList<T>(path: string | null): UseApiListResult<T> {
         setMeta(response.meta);
       })
       .catch((err: unknown) => {
-        setError(err instanceof ApiError ? err.message : 'Gagal memuat data.');
+        const message = err instanceof ApiError ? err.message : '';
+        setError(message || 'Gagal memuat data.');
       })
       .finally(() => setIsLoading(false));
   }, [path]);
