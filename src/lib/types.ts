@@ -61,6 +61,24 @@ export interface Customer {
   email: string | null;
 }
 
+export type PromotionType = 'percentage' | 'fixed';
+
+export interface Promotion {
+  id: number;
+  vendor_id: number;
+  code: string;
+  type: PromotionType;
+  value: string;
+  max_discount: string | null;
+  starts_at: string | null;
+  expires_at: string | null;
+  usage_limit: number | null;
+  times_used: number;
+  is_active: boolean;
+  is_valid_now: boolean;
+  created_at: string;
+}
+
 export interface Booking {
   id: number;
   vendor_id: number;
@@ -77,6 +95,10 @@ export interface Booking {
   status: BookingStatus;
   payment_status: BookingPaymentStatus;
   total_price: string;
+  promotion_id: number | null;
+  promotion?: Promotion;
+  discount_amount: string;
+  payable_amount: number;
   notes: string | null;
   created_at: string;
 }

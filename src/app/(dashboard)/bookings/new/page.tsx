@@ -45,6 +45,7 @@ export default function NewBookingPage() {
   const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '' });
 
   const [notes, setNotes] = useState('');
+  const [promoCode, setPromoCode] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -150,6 +151,7 @@ export default function NewBookingPage() {
           customer_id: finalCustomerId,
           start_time: startIso,
           end_time: endIso,
+          promo_code: promoCode.trim() || undefined,
           notes: notes.trim() || undefined,
         }),
       });
@@ -371,6 +373,17 @@ export default function NewBookingPage() {
               </div>
             </div>
           )}
+        </Card>
+
+        <Card className="p-5">
+          <label className="mb-1 block text-sm text-text-muted">Kode Promo (opsional)</label>
+          <input
+            value={promoCode}
+            onChange={(event) => setPromoCode(event.target.value.toUpperCase())}
+            placeholder="DISKON20"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm uppercase text-text outline-none focus:border-primary"
+          />
+          <FieldError messages={fieldErrors.promo_code} />
         </Card>
 
         <Card className="p-5">

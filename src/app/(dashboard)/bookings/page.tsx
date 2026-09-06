@@ -125,7 +125,14 @@ export default function BookingsPage() {
                     <td className="px-4 py-3 text-text-muted">
                       {formatDuration(booking.start_time, booking.end_time)}
                     </td>
-                    <td className="px-4 py-3 font-medium text-text">{formatCurrency(booking.total_price)}</td>
+                    <td className="px-4 py-3 font-medium text-text">
+                      {formatCurrency(booking.payable_amount)}
+                      {parseFloat(booking.discount_amount) > 0 && (
+                        <span className="block text-xs font-normal text-primary">
+                          Promo {booking.promotion?.code} -{formatCurrency(booking.discount_amount)}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={booking.status} />
                     </td>

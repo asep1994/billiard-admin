@@ -32,7 +32,7 @@ export const navItems: NavItem[] = [
   { label: 'Jadwal', href: '/schedule', icon: CalendarClock },
   { label: 'Member', href: '/customers', icon: Users },
   { label: 'Pembayaran', href: '/payments', icon: CreditCard },
-  { label: 'Promo', href: '/promotions', icon: Tag, comingSoon: true },
+  { label: 'Promo', href: '/promotions', icon: Tag },
   { label: 'Laporan', href: '/reports', icon: BarChart3 },
   { label: 'Notifikasi', href: '/notifications', icon: Bell, comingSoon: true },
   { label: 'Pengaturan', href: '/settings', icon: Settings },
