@@ -2,15 +2,18 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { Card } from '@/components/ui/Card';
 import { FieldError } from '@/components/ui/FieldError';
 import type { Customer } from '@/lib/types';
 
 export function CustomerForm({ customer }: { customer?: Customer }) {
   const router = useRouter();
+  const { user } = useAuth();
   const isEdit = Boolean(customer);
+  const canDelete = user?.role === 'super_admin' || user?.role === 'vendor_admin';
 
   const [name, setName] = useState(customer?.name ?? '');
   const [phone, setPhone] = useState(customer?.phone ?? '');
@@ -19,6 +22,10 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -45,6 +52,21 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!customer) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await apiFetch(`/customers/${customer.id}`, { method: 'DELETE' });
+      router.push('/customers');
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : 'Gagal menghapus pelanggan.');
+      setIsDeleting(false);
     }
   }
 
@@ -98,6 +120,49 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
         {isSubmitting && <Loader2 size={16} className="animate-spin" />}
         {isEdit ? 'Simpan Perubahan' : 'Tambah Pelanggan'}
       </button>
+
+      {isEdit && canDelete && (
+        <Card className="space-y-3 border-danger/30 p-5">
+          {deleteError && <p className="text-sm text-danger">{deleteError}</p>}
+
+          {!confirmingDelete ? (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(true)}
+              className="flex items-center gap-2 text-sm font-medium text-danger hover:underline"
+            >
+              <Trash2 size={15} />
+              Hapus Pelanggan
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="flex items-start gap-2 text-sm text-danger">
+                <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                Semua riwayat booking pelanggan ini akan ikut terhapus permanen. Tindakan ini tidak bisa
+                dibatalkan.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-white hover:bg-danger/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isDeleting && <Loader2 size={14} className="animate-spin" />}
+                  Ya, Hapus Permanen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm text-text-muted hover:bg-surface-hover"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
     </form>
   );
 }

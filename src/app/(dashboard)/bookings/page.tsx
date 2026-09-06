@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Loader2, Plus, Search, X } from 'lucide-react';
+import { CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -87,7 +87,7 @@ export default function BookingsPage() {
           <p className="p-6 text-sm text-text-muted">Tidak ada booking ditemukan.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[880px] text-left text-sm">
+            <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="bg-surface-hover text-xs uppercase tracking-wide text-text-faint">
                 <tr>
                   <th className="px-4 py-3 font-medium">Kode</th>
@@ -99,6 +99,7 @@ export default function BookingsPage() {
                   <th className="px-4 py-3 font-medium">Total</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Pembayaran</th>
+                  <th className="px-4 py-3 font-medium" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -130,6 +131,17 @@ export default function BookingsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={booking.payment_status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      {booking.payment_status !== 'paid' && booking.status !== 'cancelled' && (
+                        <Link
+                          href={`/bookings/${booking.id}/pay`}
+                          className="flex items-center gap-1.5 rounded-lg border border-primary/30 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft"
+                        >
+                          <CreditCard size={13} />
+                          Bayar
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}
