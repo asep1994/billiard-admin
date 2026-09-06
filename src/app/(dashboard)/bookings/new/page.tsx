@@ -7,7 +7,7 @@ import { ArrowLeft, Loader2, Search } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { FieldError } from '@/components/ui/FieldError';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, generateTimeSlots } from '@/lib/format';
 import type { BilliardTable, Booking, Customer, Venue } from '@/lib/types';
 
 function todayDateValue(): string {
@@ -61,6 +61,16 @@ export default function NewBookingPage() {
       .catch(() => {})
       .finally(() => setCustomersLoading(false));
   }, []);
+
+  const selectedVenue = venues.find((venue) => String(venue.id) === venueId) ?? null;
+  const startTimeOptions = useMemo(
+    () => generateTimeSlots(selectedVenue?.opening_time ?? null, selectedVenue?.closing_time ?? null),
+    [selectedVenue],
+  );
+  const endTimeOptions = useMemo(
+    () => (startTime ? startTimeOptions.filter((slot) => slot > startTime) : startTimeOptions),
+    [startTimeOptions, startTime],
+  );
 
   const startIso = date && startTime ? `${date}T${startTime}:00` : null;
   const endIso = date && endTime ? `${date}T${endTime}:00` : null;
@@ -191,7 +201,11 @@ export default function NewBookingPage() {
               <label className="mb-1 block text-sm text-text-muted">Venue</label>
               <select
                 value={venueId}
-                onChange={(event) => setVenueId(event.target.value)}
+                onChange={(event) => {
+                  setVenueId(event.target.value);
+                  setStartTime('');
+                  setEndTime('');
+                }}
                 disabled={venuesLoading}
                 className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
               >
@@ -218,21 +232,37 @@ export default function NewBookingPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-sm text-text-muted">Jam Mulai</label>
-                <input
-                  type="time"
+                <select
                   value={startTime}
-                  onChange={(event) => setStartTime(event.target.value)}
+                  onChange={(event) => {
+                    setStartTime(event.target.value);
+                    setEndTime('');
+                  }}
                   className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
-                />
+                >
+                  <option value="">Pilih jam</option>
+                  {startTimeOptions.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="mb-1 block text-sm text-text-muted">Jam Selesai</label>
-                <input
-                  type="time"
+                <select
                   value={endTime}
                   onChange={(event) => setEndTime(event.target.value)}
-                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
-                />
+                  disabled={!startTime}
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary disabled:opacity-60"
+                >
+                  <option value="">{startTime ? 'Pilih jam' : 'Pilih jam mulai dulu'}</option>
+                  {endTimeOptions.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

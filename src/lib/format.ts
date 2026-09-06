@@ -58,3 +58,25 @@ export function dateKey(value: string | Date): string {
 
   return date.toISOString().slice(0, 10);
 }
+
+/**
+ * Generate "HH:MM" time slots between `start` and `end` (inclusive) at a
+ * fixed step, for picking from a dropdown instead of typing a time.
+ * Falls back to a full-day range when the venue has no set operating hours.
+ */
+export function generateTimeSlots(start: string | null, end: string | null, stepMinutes = 30): string[] {
+  const [startHour, startMinute] = (start ?? '00:00').split(':').map(Number);
+  const [endHour, endMinute] = (end ?? '23:30').split(':').map(Number);
+
+  const startTotal = startHour * 60 + startMinute;
+  const endTotal = endHour * 60 + endMinute;
+
+  const slots: string[] = [];
+  for (let minutes = startTotal; minutes <= endTotal; minutes += stepMinutes) {
+    const hour = Math.floor(minutes / 60);
+    const minute = minutes % 60;
+    slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+  }
+
+  return slots;
+}
