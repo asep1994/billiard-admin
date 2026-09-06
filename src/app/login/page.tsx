@@ -1,7 +1,8 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { CircleDot, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api';
 
@@ -30,8 +31,8 @@ export default function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-            <CircleDot size={28} />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft">
+            <Image src="/logo.png" alt="Unity Billiard" width={56} height={56} className="h-full w-full object-cover" />
           </div>
           <h1 className="text-xl font-semibold text-text">Billiard Admin</h1>
           <p className="mt-1 text-sm text-text-muted">Masuk untuk mengelola booking &amp; venue kamu</p>
