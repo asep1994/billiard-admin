@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Billiard Admin
 
-## Getting Started
+Admin dashboard for the multi-vendor billiard booking API ([`billiard-api`](../billiard-api)). Next.js (App Router) + TypeScript + Tailwind CSS v4, talking to the Laravel backend over its Sanctum token API.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # point NEXT_PUBLIC_API_URL at your Laravel API
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The backend must be running (`php artisan serve`) and reachable at the URL in `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:8000/api/v1`). Log in with any seeded user, e.g. a `vendor_admin` from `php artisan db:seed`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What's real vs. placeholder
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Wired to the real API: **Dashboard**, **Booking**, **Meja Billiard**, **Member**, **User & Role** (the last one only for `super_admin`/`vendor_admin`, matching the backend's `UserPolicy`).
 
-## Learn More
+Everything else in the sidebar (**Jadwal**, **Pembayaran**, **Promo**, **Laporan**, **Notifikasi**, **Pengaturan**, **Log Aktivitas**) is a "Coming Soon" placeholder — those don't have a backing API endpoint yet.
 
-To learn more about Next.js, take a look at the following resources:
+## Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/lib/api.ts` — fetch wrapper that attaches the Sanctum bearer token
+- `src/lib/auth.tsx` — auth context (login/logout/me), token kept in `localStorage`
+- `src/lib/nav.ts` — sidebar item config, including per-role visibility
+- `src/lib/useApiList.ts` — small hook for fetching a paginated list endpoint
+- `src/components/layout` — `Sidebar`, `Topbar`, `DashboardShell` (auth guard + chrome)
+- `src/app/(dashboard)/*` — all authenticated pages, sharing the shell via the route group layout
