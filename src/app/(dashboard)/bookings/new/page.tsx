@@ -6,17 +6,13 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, Search } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
+import { FieldError } from '@/components/ui/FieldError';
 import { formatCurrency } from '@/lib/format';
 import type { BilliardTable, Booking, Customer, Venue } from '@/lib/types';
 
 function todayDateValue(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return <p className="mt-1 text-xs text-danger">{messages[0]}</p>;
 }
 
 const TYPE_LABELS: Record<string, string> = {

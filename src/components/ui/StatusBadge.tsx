@@ -9,6 +9,8 @@ const STATUS_STYLES: Record<string, string> = {
   unpaid: 'bg-danger-soft text-danger',
   partial: 'bg-warning-soft text-warning',
   paid: 'bg-primary-soft text-primary',
+  failed: 'bg-danger-soft text-danger',
+  expired: 'bg-surface-hover text-text-faint',
   // generic / table status
   active: 'bg-primary-soft text-primary',
   available: 'bg-primary-soft text-primary',
@@ -25,6 +27,8 @@ const STATUS_LABELS: Record<string, string> = {
   unpaid: 'Belum Bayar',
   partial: 'Sebagian',
   paid: 'Lunas',
+  failed: 'Gagal',
+  expired: 'Kedaluwarsa',
   active: 'Aktif',
   available: 'Tersedia',
   maintenance: 'Maintenance',

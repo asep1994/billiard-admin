@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Loader2, Search } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Loader2, Plus, Search } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
 import { Card } from '@/components/ui/Card';
 import type { Customer } from '@/lib/types';
@@ -9,6 +11,7 @@ import type { Customer } from '@/lib/types';
 export default function CustomersPage() {
   const { data, meta, isLoading, error } = useApiList<Customer>('/customers?per_page=100');
   const [search, setSearch] = useState('');
+  const router = useRouter();
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -28,14 +31,23 @@ export default function CustomersPage() {
           <p className="text-sm text-text-muted">{meta?.total ?? 0} pelanggan terdaftar</p>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Cari nama atau nomor HP..."
-            className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text outline-none focus:border-primary"
-          />
+        <div className="flex w-full gap-3 sm:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Cari nama atau nomor HP..."
+              className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text outline-none focus:border-primary"
+            />
+          </div>
+          <Link
+            href="/customers/new"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black hover:bg-primary-dark"
+          >
+            <Plus size={16} />
+            Tambah Member
+          </Link>
         </div>
       </div>
 
@@ -60,7 +72,11 @@ export default function CustomersPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-surface-hover">
+                  <tr
+                    key={customer.id}
+                    onClick={() => router.push(`/customers/${customer.id}/edit`)}
+                    className="cursor-pointer hover:bg-surface-hover"
+                  >
                     <td className="px-4 py-3 font-medium text-text">{customer.name}</td>
                     <td className="px-4 py-3 text-text-muted">{customer.phone}</td>
                     <td className="px-4 py-3 text-text-muted">{customer.email ?? '-'}</td>

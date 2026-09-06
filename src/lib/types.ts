@@ -81,6 +81,21 @@ export interface Booking {
   created_at: string;
 }
 
+export type PaymentGatewayStatus = 'pending' | 'paid' | 'failed' | 'expired';
+
+export interface Payment {
+  id: number;
+  booking_id: number;
+  booking?: Booking;
+  merchant_order_id: string;
+  duitku_reference: string | null;
+  payment_method: string;
+  amount: string;
+  status: PaymentGatewayStatus;
+  paid_at: string | null;
+  created_at: string;
+}
+
 export interface PaginationMeta {
   current_page: number;
   last_page: number;

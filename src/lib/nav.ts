@@ -31,7 +31,7 @@ export const navItems: NavItem[] = [
   { label: 'Meja Billiard', href: '/tables', icon: Grid3x3 },
   { label: 'Jadwal', href: '/schedule', icon: CalendarClock, comingSoon: true },
   { label: 'Member', href: '/customers', icon: Users },
-  { label: 'Pembayaran', href: '/payments', icon: CreditCard, comingSoon: true },
+  { label: 'Pembayaran', href: '/payments', icon: CreditCard },
   { label: 'Promo', href: '/promotions', icon: Tag, comingSoon: true },
   { label: 'Laporan', href: '/reports', icon: BarChart3, comingSoon: true },
   { label: 'Notifikasi', href: '/notifications', icon: Bell, comingSoon: true },
