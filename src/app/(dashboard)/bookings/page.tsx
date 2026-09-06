@@ -1,12 +1,33 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Loader2, Search } from 'lucide-react';
+import { Suspense, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle2, Loader2, Plus, Search, X } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatCurrency, formatDate, formatDuration, formatTimeRange } from '@/lib/format';
 import type { Booking } from '@/lib/types';
+
+function CreatedBanner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  if (!searchParams.get('created')) return null;
+
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary">
+      <span className="flex items-center gap-2">
+        <CheckCircle2 size={16} />
+        Booking baru berhasil dibuat.
+      </span>
+      <button onClick={() => router.replace('/bookings')} aria-label="Tutup">
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
 
 export default function BookingsPage() {
   const { data, meta, isLoading, error } = useApiList<Booking>('/bookings?per_page=100');
@@ -25,20 +46,33 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-4">
+      <Suspense fallback={null}>
+        <CreatedBanner />
+      </Suspense>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-text">Semua Booking</h2>
           <p className="text-sm text-text-muted">{meta?.total ?? 0} total booking</p>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Cari pelanggan atau meja..."
-            className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text outline-none focus:border-primary"
-          />
+        <div className="flex w-full gap-3 sm:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Cari pelanggan atau meja..."
+              className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text outline-none focus:border-primary"
+            />
+          </div>
+          <Link
+            href="/bookings/new"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black hover:bg-primary-dark"
+          >
+            <Plus size={16} />
+            Booking Baru
+          </Link>
         </div>
       </div>
 

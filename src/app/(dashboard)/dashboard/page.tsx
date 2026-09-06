@@ -254,7 +254,7 @@ export default function DashboardPage() {
 
           <div className="border-t border-border p-4">
             <Link
-              href="/bookings"
+              href="/bookings/new"
               className="flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-black hover:bg-primary-dark"
             >
               <Plus size={16} />
