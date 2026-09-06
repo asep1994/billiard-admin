@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CircleDot, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { navItems } from '@/lib/nav';
 import { useAuth } from '@/lib/auth';
 
@@ -34,8 +35,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
-              <CircleDot size={22} />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary-soft">
+              <Image src="/logo.png" alt="Unity Billiard" width={44} height={44} className="h-full w-full object-cover" />
             </div>
             <div>
               <p className="text-sm font-semibold leading-tight text-text">
