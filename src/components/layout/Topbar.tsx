@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Menu, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { NotificationBell } from './NotificationBell';
+import { VenueSwitcher } from './VenueSwitcher';
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -36,6 +37,8 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
       </div>
 
       <div className="flex items-center gap-3">
+        <VenueSwitcher />
+
         <span className="hidden rounded-lg border border-border px-3 py-1.5 text-xs text-text-muted sm:block">
           {today}
         </span>

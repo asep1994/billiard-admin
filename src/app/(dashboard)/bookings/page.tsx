@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
+import { useAuth } from '@/lib/auth';
+import { useActiveVenue } from '@/lib/activeVenue';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatCurrency, formatDate, formatDuration, formatTimeRange } from '@/lib/format';
@@ -30,7 +32,14 @@ function CreatedBanner() {
 }
 
 export default function BookingsPage() {
-  const { data, meta, isLoading, error } = useApiList<Booking>('/bookings?per_page=100');
+  const { user } = useAuth();
+  const { activeVenueId, isLoading: venueLoading } = useActiveVenue();
+  const waitingForVenue = Boolean(user?.vendor_id) && venueLoading;
+
+  const path = waitingForVenue
+    ? null
+    : `/bookings?per_page=100${activeVenueId ? `&venue_id=${activeVenueId}` : ''}`;
+  const { data, meta, isLoading, error } = useApiList<Booking>(path);
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -77,7 +86,7 @@ export default function BookingsPage() {
       </div>
 
       <Card className="overflow-hidden">
-        {isLoading ? (
+        {isLoading || waitingForVenue ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="animate-spin text-primary" size={24} />
           </div>

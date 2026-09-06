@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
+import { useAuth } from '@/lib/auth';
+import { useActiveVenue } from '@/lib/activeVenue';
 import { Card } from '@/components/ui/Card';
 import { formatCurrency, formatTimeRange } from '@/lib/format';
 import type { BilliardTable, Booking, Venue } from '@/lib/types';
@@ -30,20 +32,29 @@ function hoursSinceMidnight(iso: string): number {
 }
 
 export default function SchedulePage() {
-  const venues = useApiList<Venue>('/venues?per_page=100');
-  const tables = useApiList<BilliardTable>('/tables?per_page=100');
-  const bookings = useApiList<Booking>('/bookings?per_page=100');
+  const { user } = useAuth();
+  const isSuperAdmin = !user?.vendor_id;
+
+  // Super admin isn't scoped to one vendor, so it gets its own cross-vendor venue picker here;
+  // vendor-scoped roles just follow the venue already selected in the topbar switcher.
+  const allVenues = useApiList<Venue>(isSuperAdmin ? '/venues?per_page=100' : null);
+  const [localVenueId, setLocalVenueId] = useState<number | null>(null);
+  const sharedVenue = useActiveVenue();
 
   const [date, setDate] = useState(todayDateValue());
-  const [venueId, setVenueId] = useState<number | null>(null);
 
-  const isLoading = venues.isLoading || tables.isLoading || bookings.isLoading;
-  const activeVenueId = venueId ?? venues.data[0]?.id ?? null;
+  const venuesLoading = isSuperAdmin ? allVenues.isLoading : sharedVenue.isLoading;
+  const venueList = isSuperAdmin ? allVenues.data : sharedVenue.venues;
+  const activeVenueId = isSuperAdmin ? (localVenueId ?? allVenues.data[0]?.id ?? null) : sharedVenue.activeVenueId;
 
-  const venueTables = useMemo(
-    () => tables.data.filter((table) => table.venue_id === activeVenueId),
-    [tables.data, activeVenueId],
+  const tables = useApiList<BilliardTable>(
+    activeVenueId ? `/tables?per_page=100&venue_id=${activeVenueId}` : null,
   );
+  const bookings = useApiList<Booking>(
+    activeVenueId ? `/bookings?per_page=100&venue_id=${activeVenueId}` : null,
+  );
+
+  const isLoading = venuesLoading || tables.isLoading || bookings.isLoading;
 
   const bookingsByTable = useMemo(() => {
     const map = new Map<number, Booking[]>();
@@ -74,13 +85,13 @@ export default function SchedulePage() {
         </div>
 
         <div className="flex gap-3">
-          {venues.data.length > 1 && (
+          {isSuperAdmin && venueList.length > 1 && (
             <select
               value={activeVenueId ?? ''}
-              onChange={(event) => setVenueId(Number(event.target.value))}
+              onChange={(event) => setLocalVenueId(Number(event.target.value))}
               className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none focus:border-primary"
             >
-              {venues.data.map((venue) => (
+              {venueList.map((venue) => (
                 <option key={venue.id} value={venue.id}>
                   {venue.name}
                 </option>
@@ -100,7 +111,9 @@ export default function SchedulePage() {
         <div className="flex items-center justify-center py-16">
           <Loader2 className="animate-spin text-primary" size={24} />
         </div>
-      ) : venueTables.length === 0 ? (
+      ) : !activeVenueId ? (
+        <Card className="p-6 text-sm text-text-muted">Belum ada venue terdaftar.</Card>
+      ) : tables.data.length === 0 ? (
         <Card className="p-6 text-sm text-text-muted">Belum ada meja pada venue ini.</Card>
       ) : (
         <Card className="overflow-x-auto p-5">
@@ -118,7 +131,7 @@ export default function SchedulePage() {
             </div>
 
             <div className="space-y-3">
-              {venueTables.map((table) => {
+              {tables.data.map((table) => {
                 const tableBookings = bookingsByTable.get(table.id) ?? [];
 
                 return (

@@ -1,7 +1,8 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { CheckCircle2, Loader2, Plus } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useApiList } from '@/lib/useApiList';
@@ -289,7 +290,18 @@ export default function SettingsPage() {
       <VendorProfileForm vendorId={user.vendor_id} canEdit={canEdit} />
 
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-text">Venue</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-text">Venue</h3>
+          {canEdit && (
+            <Link
+              href="/venues/new"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-black hover:bg-primary-dark"
+            >
+              <Plus size={14} />
+              Tambah Venue
+            </Link>
+          )}
+        </div>
         {venues.isLoading ? (
           <Card className="flex justify-center p-8">
             <Loader2 className="animate-spin text-primary" size={20} />

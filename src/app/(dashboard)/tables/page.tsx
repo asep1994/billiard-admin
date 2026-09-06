@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Loader2, Plus } from 'lucide-react';
 import { useApiList } from '@/lib/useApiList';
 import { useAuth } from '@/lib/auth';
+import { useActiveVenue } from '@/lib/activeVenue';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatCurrency } from '@/lib/format';
@@ -17,8 +18,14 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function TablesPage() {
-  const { data, meta, isLoading, error } = useApiList<BilliardTable>('/tables?per_page=100');
   const { user } = useAuth();
+  const { activeVenueId, isLoading: venueLoading } = useActiveVenue();
+  const waitingForVenue = Boolean(user?.vendor_id) && venueLoading;
+
+  const path = waitingForVenue
+    ? null
+    : `/tables?per_page=100${activeVenueId ? `&venue_id=${activeVenueId}` : ''}`;
+  const { data, meta, isLoading, error } = useApiList<BilliardTable>(path);
   const canManage = user?.role === 'super_admin' || user?.role === 'vendor_admin';
 
   return (
@@ -39,7 +46,7 @@ export default function TablesPage() {
         )}
       </div>
 
-      {isLoading ? (
+      {isLoading || waitingForVenue ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="animate-spin text-primary" size={24} />
         </div>
