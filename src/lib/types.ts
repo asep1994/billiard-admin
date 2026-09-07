@@ -58,6 +58,7 @@ export interface BilliardTable {
   name: string;
   type: TableType;
   hourly_rate: string;
+  duration_prices: Partial<Record<'1' | '2' | '3', number>>;
   status: TableStatus;
 }
 

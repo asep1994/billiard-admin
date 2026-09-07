@@ -36,6 +36,11 @@ export function TableForm({ table }: { table?: BilliardTable }) {
   const [name, setName] = useState(table?.name ?? '');
   const [type, setType] = useState<TableType>(table?.type ?? '8_ball');
   const [hourlyRate, setHourlyRate] = useState(table?.hourly_rate ?? '');
+  const [durationPrices, setDurationPrices] = useState<Record<'1' | '2' | '3', string>>({
+    '1': table?.duration_prices?.['1']?.toString() ?? '',
+    '2': table?.duration_prices?.['2']?.toString() ?? '',
+    '3': table?.duration_prices?.['3']?.toString() ?? '',
+  });
   const [status, setStatus] = useState<TableStatus>(table?.status ?? 'available');
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -61,16 +66,29 @@ export function TableForm({ table }: { table?: BilliardTable }) {
     setFieldErrors({});
     setIsSubmitting(true);
 
+    const durationPricesPayload = Object.fromEntries(
+      Object.entries(durationPrices)
+        .filter(([, value]) => value !== '')
+        .map(([hours, value]) => [hours, Number(value)]),
+    );
+
     try {
       if (isEdit && table) {
         await apiFetch(`/tables/${table.id}`, {
           method: 'PUT',
-          body: JSON.stringify({ name, type, hourly_rate: hourlyRate, status }),
+          body: JSON.stringify({ name, type, hourly_rate: hourlyRate, duration_prices: durationPricesPayload, status }),
         });
       } else {
         await apiFetch('/tables', {
           method: 'POST',
-          body: JSON.stringify({ venue_id: Number(venueId), name, type, hourly_rate: hourlyRate, status }),
+          body: JSON.stringify({
+            venue_id: Number(venueId),
+            name,
+            type,
+            hourly_rate: hourlyRate,
+            duration_prices: durationPricesPayload,
+            status,
+          }),
         });
       }
 
@@ -196,6 +214,41 @@ export function TableForm({ table }: { table?: BilliardTable }) {
             />
             <FieldError messages={fieldErrors.hourly_rate} />
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm text-text-muted">
+            Harga Paket Durasi (Rp, opsional)
+          </label>
+          <p className="mb-2 text-xs text-text-faint">
+            Kosongkan agar dihitung otomatis dari tarif/jam. Isi untuk memberi harga khusus, misalnya diskon
+            untuk sewa lebih lama.
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            {(['1', '2', '3'] as const).map((hours) => (
+              <div key={hours}>
+                <label className="mb-1 block text-xs text-text-faint">{hours} Jam</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={durationPrices[hours]}
+                  onChange={(event) =>
+                    setDurationPrices((current) => ({ ...current, [hours]: event.target.value }))
+                  }
+                  placeholder={hourlyRate ? String(Number(hourlyRate) * Number(hours)) : '0'}
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+                />
+              </div>
+            ))}
+          </div>
+          <FieldError
+            messages={[
+              ...(fieldErrors['duration_prices.1'] ?? []),
+              ...(fieldErrors['duration_prices.2'] ?? []),
+              ...(fieldErrors['duration_prices.3'] ?? []),
+            ]}
+          />
         </div>
 
         {isEdit && (
