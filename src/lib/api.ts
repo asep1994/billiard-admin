@@ -28,12 +28,17 @@ export function clearToken(): void {
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
+  const isFormData = options.body instanceof FormData;
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
+      // Multipart bodies need the browser to set Content-Type itself (with
+      // the multipart boundary) - forcing application/json here would send
+      // a FormData body with the wrong header and the server would fail to
+      // parse it.
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },

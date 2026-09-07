@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Loader2, Plus } from 'lucide-react';
+import { CheckCircle2, ImageOff, Loader2, LocateFixed, Plus, Upload } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useApiList } from '@/lib/useApiList';
@@ -140,16 +140,67 @@ function VendorProfileForm({ vendorId, canEdit }: { vendorId: number; canEdit: b
 }
 
 function VenueSettingsCard({ venue, canEdit }: { venue: Venue; canEdit: boolean }) {
+  const [photoUrl, setPhotoUrl] = useState(venue.photo_url);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [name, setName] = useState(venue.name);
   const [address, setAddress] = useState(venue.address ?? '');
   const [phone, setPhone] = useState(venue.phone ?? '');
   const [openingTime, setOpeningTime] = useState(venue.opening_time ?? '');
   const [closingTime, setClosingTime] = useState(venue.closing_time ?? '');
+  const [latitude, setLatitude] = useState(venue.latitude != null ? String(venue.latitude) : '');
+  const [longitude, setLongitude] = useState(venue.longitude != null ? String(venue.longitude) : '');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationError('Browser ini tidak mendukung deteksi lokasi.');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude.toFixed(7));
+        setLongitude(position.coords.longitude.toFixed(7));
+        setIsLocating(false);
+      },
+      () => {
+        setLocationError('Gagal mengambil lokasi. Pastikan izin lokasi diizinkan.');
+        setIsLocating(false);
+      },
+    );
+  }
+
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setPhotoError(null);
+    setIsUploadingPhoto(true);
+
+    try {
+      const body = new FormData();
+      body.append('photo', file);
+      const res = await apiFetch<{ data: Venue }>(`/venues/${venue.id}/photo`, { method: 'POST', body });
+      setPhotoUrl(res.data.photo_url);
+    } catch (err) {
+      setPhotoError(err instanceof ApiError ? err.message : 'Gagal mengunggah foto.');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -167,6 +218,8 @@ function VenueSettingsCard({ venue, canEdit }: { venue: Venue; canEdit: boolean 
           phone: phone || undefined,
           opening_time: openingTime || undefined,
           closing_time: closingTime || undefined,
+          latitude: latitude ? Number(latitude) : null,
+          longitude: longitude ? Number(longitude) : null,
         }),
       });
       setSaved(true);
@@ -192,6 +245,41 @@ function VenueSettingsCard({ venue, canEdit }: { venue: Venue; canEdit: boolean 
             Perubahan tersimpan.
           </p>
         )}
+
+        <div>
+          <label className="mb-1 block text-sm text-text-muted">Foto Venue</label>
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-bg">
+              {photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoUrl} alt={venue.name} className="h-full w-full object-cover" />
+              ) : (
+                <ImageOff size={20} className="text-text-faint" />
+              )}
+            </div>
+            {canEdit && (
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  disabled={isUploadingPhoto}
+                  className="hidden"
+                  id={`venue-photo-${venue.id}`}
+                />
+                <label
+                  htmlFor={`venue-photo-${venue.id}`}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text hover:border-primary"
+                >
+                  {isUploadingPhoto ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  {photoUrl ? 'Ganti Foto' : 'Unggah Foto'}
+                </label>
+                {photoError && <p className="mt-1 text-xs text-danger">{photoError}</p>}
+              </div>
+            )}
+          </div>
+        </div>
 
         <div>
           <label className="mb-1 block text-sm text-text-muted">Nama Venue</label>
@@ -248,6 +336,43 @@ function VenueSettingsCard({ venue, canEdit }: { venue: Venue; canEdit: boolean 
             className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary disabled:opacity-60"
           />
         </div>
+
+        {canEdit && (
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-sm text-text-muted">Lokasi (buat fitur venue terdekat)</label>
+              <button
+                type="button"
+                onClick={useCurrentLocation}
+                disabled={isLocating}
+                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-60"
+              >
+                {isLocating ? <Loader2 size={12} className="animate-spin" /> : <LocateFixed size={12} />}
+                Gunakan lokasi saat ini
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <input
+                type="number"
+                step="any"
+                value={latitude}
+                onChange={(event) => setLatitude(event.target.value)}
+                placeholder="Latitude"
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+              />
+              <input
+                type="number"
+                step="any"
+                value={longitude}
+                onChange={(event) => setLongitude(event.target.value)}
+                placeholder="Longitude"
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+              />
+            </div>
+            {locationError && <p className="mt-1 text-xs text-danger">{locationError}</p>}
+            <FieldError messages={fieldErrors.latitude ?? fieldErrors.longitude} />
+          </div>
+        )}
 
         {canEdit && (
           <button

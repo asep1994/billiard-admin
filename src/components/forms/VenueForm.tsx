@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LocateFixed } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useActiveVenue } from '@/lib/activeVenue';
@@ -34,10 +34,36 @@ export function VenueForm() {
   const [phone, setPhone] = useState('');
   const [openingTime, setOpeningTime] = useState('');
   const [closingTime, setClosingTime] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationError('Browser ini tidak mendukung deteksi lokasi.');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude.toFixed(7));
+        setLongitude(position.coords.longitude.toFixed(7));
+        setIsLocating(false);
+      },
+      () => {
+        setLocationError('Gagal mengambil lokasi. Pastikan izin lokasi diizinkan.');
+        setIsLocating(false);
+      },
+    );
+  }
 
   useEffect(() => {
     if (!isSuperAdmin) return;
@@ -65,6 +91,8 @@ export function VenueForm() {
           slug,
           address: address || undefined,
           city: city || undefined,
+          latitude: latitude ? Number(latitude) : undefined,
+          longitude: longitude ? Number(longitude) : undefined,
           phone: phone || undefined,
           opening_time: openingTime || undefined,
           closing_time: closingTime || undefined,
@@ -170,6 +198,41 @@ export function VenueForm() {
             className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
           <FieldError messages={fieldErrors.city} />
+        </div>
+
+        <div>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-sm text-text-muted">Lokasi (opsional)</label>
+            <button
+              type="button"
+              onClick={useCurrentLocation}
+              disabled={isLocating}
+              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-60"
+            >
+              {isLocating ? <Loader2 size={12} className="animate-spin" /> : <LocateFixed size={12} />}
+              Gunakan lokasi saat ini
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="number"
+              step="any"
+              value={latitude}
+              onChange={(event) => setLatitude(event.target.value)}
+              placeholder="Latitude, mis. -6.9175"
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+            />
+            <input
+              type="number"
+              step="any"
+              value={longitude}
+              onChange={(event) => setLongitude(event.target.value)}
+              placeholder="Longitude, mis. 107.6191"
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+            />
+          </div>
+          {locationError && <p className="mt-1 text-xs text-danger">{locationError}</p>}
+          <FieldError messages={fieldErrors.latitude ?? fieldErrors.longitude} />
         </div>
 
         <div>

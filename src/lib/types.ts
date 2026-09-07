@@ -38,6 +38,9 @@ export interface Venue {
   slug: string;
   address: string | null;
   city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  photo_url: string | null;
   phone: string | null;
   opening_time: string | null;
   closing_time: string | null;
