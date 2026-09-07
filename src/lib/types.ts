@@ -4,6 +4,8 @@ export type Status = 'active' | 'inactive';
 
 export type TableType = '8_ball' | '9_ball' | 'snooker' | 'carom';
 
+export type VenueFacility = 'parking' | 'ac' | 'food_drink' | 'wifi';
+
 export type TableStatus = 'available' | 'maintenance' | 'inactive';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'ongoing' | 'completed' | 'cancelled';
@@ -41,6 +43,8 @@ export interface Venue {
   latitude: number | null;
   longitude: number | null;
   photo_url: string | null;
+  description: string | null;
+  facilities: VenueFacility[];
   phone: string | null;
   opening_time: string | null;
   closing_time: string | null;

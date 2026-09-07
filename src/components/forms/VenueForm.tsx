@@ -8,7 +8,8 @@ import { useAuth } from '@/lib/auth';
 import { useActiveVenue } from '@/lib/activeVenue';
 import { Card } from '@/components/ui/Card';
 import { FieldError } from '@/components/ui/FieldError';
-import type { Vendor } from '@/lib/types';
+import { FACILITY_OPTIONS } from '@/lib/facilities';
+import type { Vendor, VenueFacility } from '@/lib/types';
 
 function slugify(value: string): string {
   return value
@@ -38,6 +39,8 @@ export function VenueForm() {
   const [longitude, setLongitude] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
+  const [facilities, setFacilities] = useState<VenueFacility[]>([]);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -76,6 +79,12 @@ export function VenueForm() {
     if (!slugTouched) setSlug(slugify(value));
   }
 
+  function toggleFacility(value: VenueFacility) {
+    setFacilities((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
+    );
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
@@ -93,6 +102,8 @@ export function VenueForm() {
           city: city || undefined,
           latitude: latitude ? Number(latitude) : undefined,
           longitude: longitude ? Number(longitude) : undefined,
+          description: description || undefined,
+          facilities,
           phone: phone || undefined,
           opening_time: openingTime || undefined,
           closing_time: closingTime || undefined,
@@ -254,6 +265,39 @@ export function VenueForm() {
             className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
           <FieldError messages={fieldErrors.address} />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm text-text-muted">Deskripsi</label>
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={3}
+            placeholder="Ceritakan suasana, keunggulan, dan cocok untuk siapa venue ini..."
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-primary"
+          />
+          <FieldError messages={fieldErrors.description} />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm text-text-muted">Fasilitas</label>
+          <div className="grid grid-cols-2 gap-2">
+            {FACILITY_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex items-center gap-2 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text"
+              >
+                <input
+                  type="checkbox"
+                  checked={facilities.includes(option.value)}
+                  onChange={() => toggleFacility(option.value)}
+                  className="accent-primary"
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+          <FieldError messages={fieldErrors.facilities} />
         </div>
       </Card>
 
