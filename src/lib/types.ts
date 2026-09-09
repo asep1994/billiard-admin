@@ -32,6 +32,15 @@ export interface AuthUser {
   vendor?: Vendor;
 }
 
+export interface Banner {
+  id: number;
+  title: string | null;
+  image_url: string | null;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Venue {
   id: number;
   vendor_id: number;

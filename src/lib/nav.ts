@@ -14,6 +14,7 @@ import {
   UserCog,
   History,
   Building2,
+  Image,
   type LucideIcon,
 } from 'lucide-react';
 import type { UserRole } from './types';
@@ -29,6 +30,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Vendor', href: '/vendors', icon: Building2, roles: ['super_admin'] },
+  { label: 'Banner', href: '/banners', icon: Image, roles: ['super_admin'] },
   { label: 'Booking', href: '/bookings', icon: CalendarCheck },
   { label: 'Meja Billiard', href: '/tables', icon: Grid3x3 },
   { label: 'Jadwal', href: '/schedule', icon: CalendarClock },
