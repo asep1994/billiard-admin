@@ -3,7 +3,8 @@
 import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
+import { Check, CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { useApiList } from '@/lib/useApiList';
 import { useAuth } from '@/lib/auth';
 import { useActiveVenue } from '@/lib/activeVenue';
@@ -39,8 +40,22 @@ export default function BookingsPage() {
   const path = waitingForVenue
     ? null
     : `/bookings?per_page=100${activeVenueId ? `&venue_id=${activeVenueId}` : ''}`;
-  const { data, meta, isLoading, error } = useApiList<Booking>(path);
+  const { data, meta, isLoading, error, refetch } = useApiList<Booking>(path);
   const [search, setSearch] = useState('');
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+
+  async function handleConfirm(id: number) {
+    setConfirmingId(id);
+    try {
+      await apiFetch(`/bookings/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'confirmed' }),
+      });
+      refetch();
+    } finally {
+      setConfirmingId(null);
+    }
+  }
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -149,15 +164,31 @@ export default function BookingsPage() {
                       <StatusBadge status={booking.payment_status} />
                     </td>
                     <td className="px-4 py-3">
-                      {booking.payment_status !== 'paid' && booking.status !== 'cancelled' && (
-                        <Link
-                          href={`/bookings/${booking.id}/pay`}
-                          className="flex items-center gap-1.5 rounded-lg border border-primary/30 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft"
-                        >
-                          <CreditCard size={13} />
-                          Bayar
-                        </Link>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {booking.status === 'pending' && (
+                          <button
+                            onClick={() => handleConfirm(booking.id)}
+                            disabled={confirmingId === booking.id}
+                            className="flex items-center gap-1.5 rounded-lg border border-primary/30 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {confirmingId === booking.id ? (
+                              <Loader2 size={13} className="animate-spin" />
+                            ) : (
+                              <Check size={13} />
+                            )}
+                            Konfirmasi
+                          </button>
+                        )}
+                        {booking.payment_status !== 'paid' && booking.status !== 'cancelled' && (
+                          <Link
+                            href={`/bookings/${booking.id}/pay`}
+                            className="flex items-center gap-1.5 rounded-lg border border-primary/30 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft"
+                          >
+                            <CreditCard size={13} />
+                            Bayar
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
