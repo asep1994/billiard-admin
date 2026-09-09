@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
+import { Bell, Check, CheckCircle2, CreditCard, Loader2, Plus, Search, X } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useApiList } from '@/lib/useApiList';
 import { useAuth } from '@/lib/auth';
@@ -43,6 +43,8 @@ export default function BookingsPage() {
   const { data, meta, isLoading, error, refetch } = useApiList<Booking>(path);
   const [search, setSearch] = useState('');
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [isSendingReminders, setIsSendingReminders] = useState(false);
+  const [reminderMessage, setReminderMessage] = useState<string | null>(null);
 
   async function handleConfirm(id: number) {
     setConfirmingId(id);
@@ -54,6 +56,27 @@ export default function BookingsPage() {
       refetch();
     } finally {
       setConfirmingId(null);
+    }
+  }
+
+  async function handleSendReminders() {
+    setIsSendingReminders(true);
+    setReminderMessage(null);
+    try {
+      const result = await apiFetch<{ sent: number }>('/bookings/send-reminders', {
+        method: 'POST',
+        body: JSON.stringify(activeVenueId ? { venue_id: activeVenueId } : {}),
+      });
+      setReminderMessage(
+        result.sent > 0
+          ? `${result.sent} reminder terkirim.`
+          : 'Tidak ada booking yang perlu diingatkan saat ini.',
+      );
+      refetch();
+    } catch {
+      setReminderMessage('Gagal mengirim reminder. Coba lagi.');
+    } finally {
+      setIsSendingReminders(false);
     }
   }
 
@@ -90,6 +113,14 @@ export default function BookingsPage() {
               className="w-full rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text outline-none focus:border-primary"
             />
           </div>
+          <button
+            onClick={handleSendReminders}
+            disabled={isSendingReminders}
+            className="flex shrink-0 items-center gap-2 rounded-lg border border-primary/30 px-4 py-2 text-sm font-medium text-primary hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSendingReminders ? <Loader2 size={16} className="animate-spin" /> : <Bell size={16} />}
+            Kirim Reminder
+          </button>
           <Link
             href="/bookings/new"
             className="flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black hover:bg-primary-dark"
@@ -99,6 +130,18 @@ export default function BookingsPage() {
           </Link>
         </div>
       </div>
+
+      {reminderMessage && (
+        <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary">
+          <span className="flex items-center gap-2">
+            <Bell size={16} />
+            {reminderMessage}
+          </span>
+          <button onClick={() => setReminderMessage(null)} aria-label="Tutup">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       <Card className="overflow-hidden">
         {isLoading || waitingForVenue ? (
