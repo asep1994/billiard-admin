@@ -12,6 +12,8 @@ export type BookingStatus = 'pending' | 'confirmed' | 'ongoing' | 'completed' | 
 
 export type BookingPaymentStatus = 'unpaid' | 'partial' | 'paid';
 
+export type LeadStatus = 'new' | 'contacted' | 'converted' | 'rejected';
+
 export interface Vendor {
   id: number;
   name: string;
@@ -39,6 +41,22 @@ export interface Banner {
   order: number;
   is_active: boolean;
   created_at: string;
+}
+
+export interface PartnerLead {
+  id: number;
+  google_place_id: string;
+  name: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  google_rating: number | null;
+  google_rating_count: number | null;
+  status: LeadStatus;
+  notes: string | null;
+  referred_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Venue {

@@ -16,6 +16,11 @@ const STATUS_STYLES: Record<string, string> = {
   available: 'bg-primary-soft text-primary',
   maintenance: 'bg-warning-soft text-warning',
   inactive: 'bg-danger-soft text-danger',
+  // partner lead status
+  new: 'bg-info-soft text-info',
+  contacted: 'bg-warning-soft text-warning',
+  converted: 'bg-primary-soft text-primary',
+  rejected: 'bg-danger-soft text-danger',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -33,6 +38,10 @@ const STATUS_LABELS: Record<string, string> = {
   available: 'Tersedia',
   maintenance: 'Maintenance',
   inactive: 'Nonaktif',
+  new: 'Baru',
+  contacted: 'Dihubungi',
+  converted: 'Gabung',
+  rejected: 'Ditolak',
 };
 
 export function StatusBadge({ status }: { status: string }) {
